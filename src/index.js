@@ -83,7 +83,7 @@ app.delete('/api/trips/:id', async (request, response) => {
   }
 });
  
-const port = 5000;
+const port = 4000;
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 });
