@@ -26,7 +26,7 @@ app.post('/api/sign-up', async (request, response) => {
 
 app.post('/api/log-in', async (request, response) => {
   const user_data = request.body;
-  const result = await database.raw(`select email, id from users where username='${user_data.email}' and password='${user_data.password}'`);
+  const result = await database.raw(`select email, id from users where email='${user_data.email}' and password='${user_data.password}'`);
   if (result.length != 0){
     response.status(200);
     response.json(result[0]);
@@ -37,9 +37,9 @@ app.post('/api/log-in', async (request, response) => {
   } 
 });
 
-app.post('/api/trips/:user', async (request, response) => {
+app.post('/api/:userID/trips', async (request, response) => {
   const data_trip = request.body;
-  const userID = Number (request.params.user);
+  const userID = Number (request.params.userID);
   await database.raw(`insert into trips (date, destination, days, rating, userID)
   values ('${data_trip.date}','${data_trip.destination}',${data_trip.days},${data_trip.rating}, ${userID})`);
   const result = await database.raw(`select * from trips order by id desc limit 1`);
@@ -48,9 +48,9 @@ app.post('/api/trips/:user', async (request, response) => {
 });
 
 
-app.get('/api/trips/:user', async (request, response) => {
-  const user = Number (request.params.user);
-  const result = await database.raw(`select * from trips where userId = ${user}`);
+app.get('/api/:userID/trips/', async (request, response) => {
+  const userID = Number (request.params.userID);
+  const result = await database.raw(`select * from trips where userId = ${userID}`);
   response.status(200);
   response.json(result);
 });
@@ -64,7 +64,7 @@ app.get('/api/trips', async (request, response) => {
 app.put('/api/trips/:id', async (request, response) => {
   const id = Number(request.params.id);
   const data_trip = request.body;
-  await database.raw(`update trips set date ='${data_trip.date}', vacation ='${data_trip.vacation}', days = ${data_trip.days}, rating = ${data_trip.rating} where id = ${id} `);
+  await database.raw(`update trips set date ='${data_trip.date}', destination ='${data_trip.destination}', days = ${data_trip.days}, rating = ${data_trip.rating} where id = ${id} `);
   const result = await database.raw(`select * from trips where id = ${id}`);
   response.status(200);
   response.json(result); 
