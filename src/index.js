@@ -48,7 +48,7 @@ app.post('/api/:userID/trips', async (request, response) => {
 });
 
 
-app.get('/api/:userID/trips/', async (request, response) => {
+app.get('/api/:userID/trips', async (request, response) => {
   const userID = Number (request.params.userID);
   const result = await database.raw(`select * from trips where userId = ${userID}`);
   response.status(200);
@@ -68,6 +68,22 @@ app.put('/api/trips/:id', async (request, response) => {
   const result = await database.raw(`select * from trips where id = ${id}`);
   response.status(200);
   response.json(result); 
+});
+
+app.put('/api/users/:userID', async (request, response) => {
+  const userID = Number(request.params.userID);
+  const user_data = request.body;
+  if(user_data.length!=0){
+  await database.raw(`update users set email ='${user_data.email}', password ='${user_data.password}' where id = ${userID} `);
+  const result = await database.raw(`select * from users where id = ${userID}`);
+  response.status(200);
+  response.json(result);
+  }
+  else {
+    response.status(404)
+    response.json("error")
+  }
+
 });
 
 app.delete('/api/trips/:id', async (request, response) => {
