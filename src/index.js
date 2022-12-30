@@ -44,15 +44,20 @@ app.post('/api/:userID/trips', async (request, response) => {
   values ('${data_trip.date}','${data_trip.destination}',${data_trip.days},${data_trip.rating}, ${userID})`);
   const result = await database.raw(`select * from trips order by id desc limit 1`);
   response.status(200);
-  response.json(result);
+  response.json(result[0]);
 });
-
+app.get('/api/users/:userID', async (request, response) => {
+  const userID = Number (request.params.userID);
+  const password = await database.raw(`select password from users where id = ${userID}`);
+  response.status(200);
+  response.json(password[0].password);
+});
 
 app.get('/api/:userID/trips', async (request, response) => {
   const userID = Number (request.params.userID);
-  const result = await database.raw(`select * from trips where userId = ${userID}`);
+  const result = await database.raw(`select * from trips where userID = ${userID}`);
   response.status(200);
-  response.json(result);
+  response.json(result[0]);
 });
 
 app.get('/api/trips', async (request, response) => {
@@ -67,21 +72,32 @@ app.put('/api/trips/:id', async (request, response) => {
   await database.raw(`update trips set date ='${data_trip.date}', destination ='${data_trip.destination}', days = ${data_trip.days}, rating = ${data_trip.rating} where id = ${id} `);
   const result = await database.raw(`select * from trips where id = ${id}`);
   response.status(200);
-  response.json(result); 
+  response.json(result[0]); 
 });
 
 app.put('/api/users/:userID', async (request, response) => {
   const userID = Number(request.params.userID);
   const user_data = request.body;
   if(user_data.length!=0){
-  await database.raw(`update users set email ='${user_data.email}', password ='${user_data.password}' where id = ${userID} `);
+    if(user_data.email && !user_data.password) {
+      await database.raw(`update users set email ='${user_data.email}' where id = ${userID} `);
+    }
+    else if (user_data.password && !user_data.email) {
+      await database.raw(`update users set password ='${user_data.password}' where id = ${userID} `);
+    }
+    else if(!user_data.email && !user_data.password){
+      throw new Error("Something is wrong. Neither email nor password exist!")
+    }
+    else{
+    await database.raw(`update users set email ='${user_data.email}', password ='${user_data.password}' where id = ${userID} `);
+    }
   const result = await database.raw(`select * from users where id = ${userID}`);
   response.status(200);
-  response.json(result);
+  response.json(result[0]);
   }
   else {
     response.status(404)
-    response.json("error")
+    response.json(error.message)
   }
 
 });
