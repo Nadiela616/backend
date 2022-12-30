@@ -57,7 +57,7 @@ app.get('/api/:userID/trips', async (request, response) => {
   const userID = Number (request.params.userID);
   const result = await database.raw(`select * from trips where userID = ${userID}`);
   response.status(200);
-  response.json(result[0]);
+  response.json(result);
 });
 
 app.get('/api/trips', async (request, response) => {
