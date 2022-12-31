@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { response } from 'express';
 import database from './database.js';
 import CredentialsValidation from './CredentialsValidation.js';
 import cors from 'cors'; 
@@ -7,6 +7,7 @@ const app = express();
 app.use(cors()); 
 app.use(express.json());
 app.use('/', express.static('./public', {extensions: ['html']}));
+
 
 
 app.post('/api/sign-up', async (request, response) => {
@@ -38,10 +39,10 @@ app.post('/api/log-in', async (request, response) => {
 });
 
 app.post('/api/:userID/trips', async (request, response) => {
-  const data_trip = request.body;
+  const data = request.body;
   const userID = Number (request.params.userID);
-  await database.raw(`insert into trips (date, destination, days, rating, userID)
-  values ('${data_trip.date}','${data_trip.destination}',${data_trip.days},${data_trip.rating}, ${userID})`);
+  await database.raw(`insert into trips (date, destination,description,days,rating,latitude,longitude,country,user_id)
+  values ('${data.date}','${data.destination}','${data.description}',${data.days},${data.rating},${data.lat},${data.lon},'${data.country}',${userID})`);
   const result = await database.raw(`select * from trips order by id desc limit 1`);
   response.status(200);
   response.json(result[0]);
@@ -55,7 +56,7 @@ app.get('/api/users/:userID', async (request, response) => {
 
 app.get('/api/:userID/trips', async (request, response) => {
   const userID = Number (request.params.userID);
-  const result = await database.raw(`select * from trips where userID = ${userID}`);
+  const result = await database.raw(`select * from trips where user_id = ${userID}`);
   response.status(200);
   response.json(result);
 });
@@ -102,6 +103,12 @@ app.put('/api/users/:userID', async (request, response) => {
 
 });
 
+app.delete('/api/user/:id', async (request,response)=>{
+  const id = request.params.id;
+  await database.raw(`delete from users where id=${id}`)
+  response.status(200).send("ok")
+})
+
 app.delete('/api/trips/:id', async (request, response) => {
   const id = request.params.id;
   const result = await database.raw(`delete from trips where id=${id}`);
@@ -114,6 +121,9 @@ app.delete('/api/trips/:id', async (request, response) => {
     response.json(`The trip with id = ${id} does not exist!`);
   }
 });
+
+
+
  
 const port = 4000;
 app.listen(port, () => {
